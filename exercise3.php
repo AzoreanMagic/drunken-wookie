@@ -1,15 +1,14 @@
 <?php
 
 $data = explode(' ', file_get_contents('http://primes.utm.edu/lists/small/1000.txt'));
-$arr  = array(); $i=2;
+$arr  = array();
 
 foreach($data as $cell){
-	if(is_numeric($cell) && is_prime($cell)){
+	if(is_numeric(trim($cell))){
 		array_push($arr, $cell);
-	}	
+	}
 }
 
-//echo 'count:' . count($arr) ;
 print_list($arr);
 
 /* FUNCTIONS */
@@ -24,10 +23,11 @@ function is_prime($nmb){
 
 function print_list($list){
 	echo '<ul>';
-	
-	foreach($list as $item)
+		
+	foreach($list as $item){
 		echo '<li>'.$item.'</li>';
-	
+	}
+		
 	echo '</ul>';
 }
 
