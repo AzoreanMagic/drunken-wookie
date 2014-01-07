@@ -11,7 +11,11 @@ while (20 > count ($arr )){
 print_list($arr);
 
 function is_prime($nmb){
-	return $nmb % 2 == 0;
+	for($i=2; $i<$nmb; $i++){
+		if($nmb % $i == 0)
+			return false;
+	}
+	return true;
 }
 
 function print_list($list){
