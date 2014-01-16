@@ -3,9 +3,9 @@
 	class Database {
 		
 		private static $host 		= "localhost";
-		private static $user 		= "usrphpex";
-		private static $pass 		= "pwdusrphpex";
-		private static $database 	= "phpex";
+		private static $user 		= "740351";
+		private static $pass 		= "hazardous9";
+		private static $database 	= "740351";
 
 		// Connection methods
 		public static function get_connection(){
