@@ -3,9 +3,9 @@
 	class Database {
 		
 		private static $host 		= "localhost";
-		private static $user 		= "740351";
-		private static $pass 		= "hazardous9";
-		private static $database 	= "740351";
+		private static $user 		= "usrphpex";
+		private static $pass 		= "pwdusrphpex";
+		private static $database 	= "phpex";
 
 		// Connection methods
 		public static function get_connection(){
@@ -44,8 +44,8 @@
 		
 		public static function escape_string($str){
 			$conn 	= self::get_connection();
-			
+				
 			return $conn->escape_string($str);
 		}
-	}
+	} 
 ?>
