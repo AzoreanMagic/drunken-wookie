@@ -15,8 +15,6 @@ require_once 'class/helper_mysqli.php';
 		<h2>Exercise 7</h2>
 		
 		<?php
-		$mysqli = new helper_mysqli(HOST, USER, PASS, DATABASE);
-		$mysqli->get_connection();
 		
 		echo file_get_contents( dirname( __FILE__ ) . '/view/search-appid.html' );
 		
@@ -27,11 +25,32 @@ require_once 'class/helper_mysqli.php';
 		}
 		else {
 			$count	= 0;
-		
+			$mysqli = new helper_mysqli(HOST, USER, PASS, DATABASE);
+			$mysqli->get_connection();
+			
+			$result	= $mysqli->execute_query( "SHOW tables LIKE 'itunes'" );
+			
+			if ( !$mysqli->fetch_array( $result ) ){	//check if table exists, if not create it
+				debug( 'Itunes table does not exist. Attempting to create table... <br />', 1 );
+				
+				try{
+					if( !$query = file_get_contents( 'itunes.sql' ) )
+						throw new Exception( 'Unable to load sql for table creation' );
+					
+					if( !$mysqli->execute_query( $query ) )
+						throw new Exception( 'Could not create table on database. Aborting.' );
+					
+					debug( 'Database table itunes was successfully created. <br />', 2 );
+				}
+				catch(Exception $e){
+					die ( debug ( $e->getMessage(), 4) );
+				}
+			}
+					
 			for ( $i = 374525528; $i <= 374526528; $i++ ){
 				$itunes = new Itunes( $i );
 				if ( $data = $itunes->get_data() ){
-					if( !insert( $i, $data ) ){
+					if( !insert( $mysqli, $i, $data ) ){
 						debug( 'Unable to register app id ' . $i . "to database. Continuing operation. <br />", 1 );
 						continue;
 					}
@@ -41,7 +60,9 @@ require_once 'class/helper_mysqli.php';
 				else{
 					debug( 'No data was found for app id ' . $i . ". Continuing operation. <br />", 1 );
 				}
-			}
+			}			
+			$mysqli->close_connection();
+		
 			debug('Number of insertions on database: ' . $count );
 		}
 		
@@ -51,42 +72,17 @@ require_once 'class/helper_mysqli.php';
 
 <?php
 
-function insert( $id, $data ){
-				
-	$mysqli = new helper_mysqli(HOST, USER, PASS, DATABASE);
-	$mysqli->get_connection();
-		
-	$result	= $mysqli->execute_query( "SHOW tables LIKE 'itunes'" );
-			
-	if ( !$mysqli->fetch_array( $result ) ){	//check if table exists, if not create it
-		debug( 'Itunes table does not exist. Attempting to create table... <br />', 1 );
-		
-		try{
-			if( !$query = file_get_contents( 'itunes.sql' ) )
-				throw new Exception( 'Unable to load sql for table creation' );
-			
-			if( !$mysqli->execute_query( $query ) )
-				throw new Exception( 'Could not create table on database. Aborting.' );
-			
-			debug( 'Database table itunes was successfully created. <br />', 2 );
-		}
-		catch(Exception $e){
-			die ( debug ( $e->getMessage(), 4) );
-		}
-	}
-	
+function insert( $mysqli, $id, $data ){
 	$query_fields = $query_values = "";
 	
 	foreach ( $data as $field => $value){
 		$field	= $mysqli->escape_string( $field );	
 				
-		if ( !$mysqli->exists_column( $field ) ){	//check if column exists on table, if not create it as VARCHAR type
+		if ( !$mysqli->exists_column( 'itunes', $field ) ){	//check if column exists on table, if not create it as VARCHAR type
 			debug( 'Column ' . $field . ' does not exists on table. Attempting to create column' . $field .'... <br />', 1 );
 					
 			try{
-				$query = "ALTER TABLE itunes ADD " . $field . " VARCHAR(128)";
-				
-				if( !$mysqli->execute_query( $query ) ){
+				if( !$mysqli->create_column( 'itunes', $field ) ){
 					throw new Exception( 'Column' . $field . 'could not be created on database.<br />' );
 				}
 				debug( 'Column ' . $field .' successfully created.<br />', 2 );
@@ -114,8 +110,6 @@ function insert( $id, $data ){
 		debug( $e->getMessage() );
 		return false;
 	}
-	
-	$mysqli->close_connection();
 	
 	return $result;
 }

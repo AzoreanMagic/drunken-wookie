@@ -18,7 +18,7 @@
 		
 		public function get_connection(){
 			try{
-				if ( !self::$conn = new mysqli( $this->host, $this->user, $this->pass, $this->database) )
+				if ( !self::$conn = new mysqli( $this->host, $this->user, $this->pass, $this->database ) )
 					throw new Exception ( 'Unable to connect to database!' );
 				
 				self::$ready = true;
@@ -69,8 +69,14 @@
 			return self::$conn->errno;
 		}
 		
-		public function exists_column( $column_name ){
-			$result = self::$conn->query( "SHOW COLUMNS FROM itunes LIKE '" . $column_name . "'" );
+		public function create_column( $table_name, $column_name ){
+			$query = "ALTER TABLE " . $table_name . " ADD " . $column_name . " VARCHAR(128)";
+			
+			return self::$conn->query( $query );
+		}
+		
+		public function exists_column( $table_name, $column_name ){
+			$result = self::$conn->query( "SHOW COLUMNS FROM " . $table_name . " LIKE '" . $column_name . "'" );
 	
 			return $result->fetch_assoc();
 		}
